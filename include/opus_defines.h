@@ -63,6 +63,8 @@ extern "C" {
 /** @cond OPUS_INTERNAL_DOC */
 /**Export control for opus functions */
 
+#if !defined(OPUS_EXPORT)
+
 #if defined(__GNUC__) && defined(OPUS_BUILD)
 # define OPUS_EXPORT __attribute__ ((visibility ("default")))
 #elif defined(WIN32) && !defined(__MINGW32__)
@@ -73,6 +75,8 @@ extern "C" {
 # endif
 #else
 # define OPUS_EXPORT
+#endif
+
 #endif
 
 # if !defined(OPUS_GNUC_PREREQ)
