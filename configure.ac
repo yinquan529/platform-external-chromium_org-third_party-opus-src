@@ -53,16 +53,16 @@ AC_DEFINE_UNQUOTED([OPUS_VERSION], ["$OPUS_VERSION"],
 
 # For libtool.
 dnl Please update these for releases.
-OPUS_LT_CURRENT=2
+OPUS_LT_CURRENT=3
 OPUS_LT_REVISION=0
-OPUS_LT_AGE=2
+OPUS_LT_AGE=3
 
 AC_SUBST(OPUS_LT_CURRENT)
 AC_SUBST(OPUS_LT_REVISION)
 AC_SUBST(OPUS_LT_AGE)
 
 AM_INIT_AUTOMAKE($PACKAGE, $VERSION, no-define)
-AM_MAINTAINER_MODE
+AM_MAINTAINER_MODE([enable])
 
 AC_CANONICAL_HOST
 AC_MINGW32
@@ -70,7 +70,6 @@ AM_PROG_LIBTOOL
 AM_PROG_CC_C_O
 
 AC_PROG_CC_C99
-AC_C_BIGENDIAN
 AC_C_CONST
 AC_C_INLINE
 
@@ -159,10 +158,7 @@ AC_ARG_ENABLE(fixed-point, [  --enable-fixed-point       compile without floatin
   ac_enable_fixed="yes";
   ac_enable_float="no";
   AC_DEFINE([FIXED_POINT], [1], [Compile as fixed-point (for machines without a fast enough FPU)])
-else
-  AC_DEFINE([FLOATING_POINT], , [Compile as floating-point (for machines with a fast enough FPU)])
-fi],
-AC_DEFINE([FLOATING_POINT], , [Compile as floating-point (for machines with a fast enough FPU)]))
+fi])
 
 ac_enable_fixed_debug="no"
 AC_ARG_ENABLE(fixed-point-debug, [  --enable-fixed-point-debug debug fixed-point implementation],
@@ -278,8 +274,27 @@ AC_SUBST(SIZE32)
 AM_CONDITIONAL([FIXED_POINT], [test x$ac_enable_fixed = xyes])
 AM_CONDITIONAL([CUSTOM_MODES], [test x$ac_enable_custom_modes = xyes])
 
-AC_OUTPUT([Makefile opus.pc opus-uninstalled.pc
-           doc/Makefile doc/Doxyfile])
+dnl subsitutions for the pkg-config files
+if test x$ac_enable_float = xyes; then
+  PC_BUILD="floating-point"
+  PC_LIBM=$LIBM
+else
+  PC_BUILD="fixed-point"
+  PC_LIBM=
+fi
+dnl opus_custom requires libm as well
+if test x$ac_enable_custom_modes = xyes; then
+  PC_BUILD="${PC_BUILD}, custom modes"
+  PC_LIBM=$LIBM
+fi
+AC_SUBST([PC_BUILD])
+AC_SUBST([PC_LIBM])
+
+
+AC_CONFIG_FILES([Makefile opus.pc opus-uninstalled.pc
+                 doc/Makefile doc/Doxyfile])
+
+AC_OUTPUT
 
 AC_MSG_RESULT([
 ------------------------------------------------------------------------
